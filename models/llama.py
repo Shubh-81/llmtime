@@ -7,6 +7,7 @@ from transformers import (
     LlamaForCausalLM, 
     LlamaTokenizer, 
 )
+
 from data.serialize import serialize_arr, deserialize_str, SerializerSettings
 
 DEFAULT_EOS_TOKEN = "</s>"
@@ -127,7 +128,7 @@ def llama_completion_fn(
     input_str,
     steps,
     settings,
-    batch_size=5,
+    batch_size=1,
     num_samples=20,
     temp=0.9, 
     top_p=0.9,
