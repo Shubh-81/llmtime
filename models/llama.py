@@ -21,6 +21,7 @@ def llama2_model_string(model_size, chat):
     return f"meta-llama/Llama-2-{model_size.lower()}-{chat}hf"
 
 def get_tokenizer(model):
+    print("get_tokenizer")
     name_parts = model.split("-")
     model_size = name_parts[0]
     chat = len(name_parts) > 1
@@ -45,6 +46,7 @@ def get_tokenizer(model):
     return tokenizer
 
 def get_model_and_tokenizer(model_name, cache_model=False):
+    print("get_model_and_tokenizer")
     if model_name in loaded:
         return loaded[model_name]
     name_parts = model_name.split("-")
@@ -135,6 +137,7 @@ def llama_completion_fn(
     cache_model=True,
     chunk_size = 100
 ):
+    print("llama_completion_fn")
     avg_tokens_per_step = len(tokenize_fn(input_str, model)['input_ids']) / len(input_str.split(settings.time_sep))
     max_tokens = int(avg_tokens_per_step*steps)
     

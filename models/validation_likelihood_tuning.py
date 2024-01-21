@@ -65,6 +65,7 @@ def get_autotuned_predictions_data(train, test, hypers, num_samples, get_predict
     Returns:
         dict: Dictionary containing predictions, best hyperparameters, and other related information.
     """
+    print("get_autotuned_predictions_data")
     if isinstance(hypers,dict):
         hypers = list(grid_iter(hypers))
     else:
@@ -85,6 +86,7 @@ def get_autotuned_predictions_data(train, test, hypers, num_samples, get_predict
             raise ValueError(f'Removed too many validation series. Only {len(train_minus_val)} out of {len(n_val)} series have length >= {val_length}. Try or decreasing val_length.')
         val_nlls = []
         def eval_hyper(hyper):
+            print("eval_hyper")
             try:
                 return hyper, evaluate_hyper(hyper, train_minus_val, val, get_predictions_fn)
             except ValueError:

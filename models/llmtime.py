@@ -150,7 +150,7 @@ def generate_predictions(
             - completions_list (list of lists): Raw text completions.
             - input_strs (list of str): Serialized input strings.
     """
-    
+    print("generate_predictions")
     completions_list = []
     complete = lambda x: completion_fn(input_str=x, steps=steps*STEP_MULTIPLIER, settings=settings, num_samples=num_samples, temp=temp)
     if parallel and len(input_strs) > 1:
@@ -189,7 +189,7 @@ def get_llmtime_predictions_data(train, test, model, settings, num_samples=10, t
     Returns:
         dict: Dictionary containing predictions, samples, median, NLL/D averaged over each series, and other related information.
     """
-
+    print("get_llmtime_predictions_data")
     assert model in completion_fns, f'Invalid model {model}, must be one of {list(completion_fns.keys())}'
     completion_fn = completion_fns[model]
     nll_fn = nll_fns[model] if model in nll_fns else None
