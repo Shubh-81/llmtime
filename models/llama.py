@@ -133,7 +133,7 @@ def llama_completion_fn(
     temp=0.9, 
     top_p=0.9,
     cache_model=True,
-    chunk_size = 1000
+    chunk_size = 100
 ):
     avg_tokens_per_step = len(tokenize_fn(input_str, model)['input_ids']) / len(input_str.split(settings.time_sep))
     max_tokens = int(avg_tokens_per_step*steps)
