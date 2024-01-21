@@ -128,7 +128,7 @@ def llama_completion_fn(
     input_str,
     steps,
     settings,
-    batch_size=5,
+    batch_size=1,
     num_samples=20,
     temp=0.9, 
     top_p=0.9,
@@ -148,6 +148,7 @@ def llama_completion_fn(
 
         batch = {k: v.repeat(batch_size, 1) for k, v in batch.items()}
         batch = {k: v.cuda() for k, v in batch.items()}
+        print(len(batch))
         num_input_ids = batch['input_ids'].shape[1]
 
         good_tokens_str = list("0123456789" + settings.time_sep)
