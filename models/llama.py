@@ -21,7 +21,6 @@ def llama2_model_string(model_size, chat):
     return f"meta-llama/Llama-2-{model_size.lower()}-{chat}hf"
 
 def get_tokenizer(model):
-    print("get_tokenizer")
     name_parts = model.split("-")
     model_size = name_parts[0]
     chat = len(name_parts) > 1
@@ -46,7 +45,6 @@ def get_tokenizer(model):
     return tokenizer
 
 def get_model_and_tokenizer(model_name, cache_model=False):
-    print("get_model_and_tokenizer")
     if model_name in loaded:
         return loaded[model_name]
     name_parts = model_name.split("-")
@@ -134,10 +132,10 @@ def llama_completion_fn(
     num_samples=20,
     temp=0.9, 
     top_p=0.9,
-    cache_model=True,
-    chunk_size = 100
+    cache_model=True
 ):
     print("llama_completion_fn")
+    print(input_str)
     avg_tokens_per_step = len(tokenize_fn(input_str, model)['input_ids']) / len(input_str.split(settings.time_sep))
     max_tokens = int(avg_tokens_per_step*steps)
     
@@ -145,34 +143,32 @@ def llama_completion_fn(
 
     gen_strs = []
     for _ in tqdm(range(num_samples // batch_size)):
-        for i in range(0, len(input_str), chunk_size):
-            chunk_input_str = input_str[i:i + chunk_size]
+        batch = tokenizer(
+            [input_str],
+            return_tensors="pt",
+        )
 
-            batch = tokenizer(
-                [chunk_input_str],
-                return_tensors="pt",
-            )
+        batch = {k: v.repeat(batch_size, 1) for k, v in batch.items()}
+        batch = {k: v.cuda() for k, v in batch.items()}
+        num_input_ids = batch['input_ids'].shape[1]
 
-            batch = {k: v.cuda() for k, v in batch.items()}  # Move to GPU here if necessary
-            num_input_ids = batch['input_ids'].shape[1]
+        good_tokens_str = list("0123456789" + settings.time_sep)
+        good_tokens = [tokenizer.convert_tokens_to_ids(token) for token in good_tokens_str]
+        # good_tokens += [tokenizer.eos_token_id]
+        bad_tokens = [i for i in range(len(tokenizer)) if i not in good_tokens]
 
-            good_tokens_str = list("0123456789" + settings.time_sep)
-            good_tokens = [tokenizer.convert_tokens_to_ids(token) for token in good_tokens_str]
-            # good_tokens += [tokenizer.eos_token_id]
-            bad_tokens = [i for i in range(len(tokenizer)) if i not in good_tokens]
-
-            generate_ids = model.generate(
-                **batch,
-                do_sample=True,
-                max_new_tokens=max_tokens,
-                temperature=temp,
-                top_p=top_p,
-                bad_words_ids=[[t] for t in bad_tokens],
-                renormalize_logits=True,
-            )
-            gen_strs += tokenizer.batch_decode(
-                generate_ids[:, num_input_ids:],
-                skip_special_tokens=True,
-                clean_up_tokenization_spaces=False
-            )
+        generate_ids = model.generate(
+            **batch,
+            do_sample=True,
+            max_new_tokens=max_tokens,
+            temperature=temp,
+            top_p=top_p,
+            bad_words_ids=[[t] for t in bad_tokens],
+            renormalize_logits=True,
+        )
+        gen_strs += tokenizer.batch_decode(
+            generate_ids[:, num_input_ids:],
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=False
+        )
     return gen_strs
